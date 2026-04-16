@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>롯데호텔 제주 데일리 마케팅 리포트</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #b0c4de; margin: 0; padding: 20px; color: #333; }
+        .header { background: #fff; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0 0 5px 0; color: #0056b3; font-size: 24px; }
+        .update-time { font-size: 12px; color: #777; margin-bottom: 15px; }
+        .ai-insight { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; border-radius: 4px; font-weight: bold; line-height: 1.6; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+        .card { background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); min-height: 250px; display: flex; flex-direction: column; }
+        .card h3 { margin: 0 0 15px 0; font-size: 14px; color: #555; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .chart-container { position: relative; height: 200px; width: 100%; }
+        ul.news-list { list-style: none; padding: 0; margin: 0; }
+        ul.news-list li { font-size: 13px; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #eee; color: #444; }
+        .weather-text { font-size: 20px; text-align: center; font-weight: bold; color: #17a2b8; margin: auto 0; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>롯데호텔 제주 데일리 마케팅 리포트</h1>
+        <div class="update-time" id="update-time">업데이트 시간: 데이터를 불러오는 중...</div>
+        <div class="ai-insight" id="ai-insight">
+            💡 [AI Daily Insight]<br>데이터를 불러오고 있습니다...
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <div class="card">
+            <h3>서귀포 실시간 기상 지수</h3>
+            <div class="weather-text" id="weather-info">데이터 로딩 중...</div>
+        </div>
+        
+        <div class="card">
+            <h3>경쟁사(신라호텔) 최신 뉴스 동향</h3>
+            <ul class="news-list" id="news-list">
+                <li>데이터 로딩 중...</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h3>브랜드 지수 (목표 달성률)</h3>
+            <div class="chart-container"><canvas id="widget1"></canvas></div>
+        </div>
+    </div>
+
+    <script>
+        // 파이썬이 만든 JSON 데이터를 불러오는 핵심 함수
+        async function loadDashboardData() {
+            try {
+                // 주의: 일반 폴더에서 더블클릭으로 열면 브라우저 보안 정책상(CORS) 파일을 못 읽을 수 있습니다.
+                // 웹 서버 환경(사내망 서버, 또는 로컬 서버 프로그램)에서 실행해야 합니다.
+                const response = await fetch('dashboard_data.json');
+                const data = await response.json();
+
+                // 1. 업데이트 시간 반영
+                document.getElementById('update-time').innerText = `마지막 업데이트: ${data.updated_at}`;
+
+                // 2. AI 요약 반영 (줄바꿈 처리를 위해 replace 사용)
+                document.getElementById('ai-insight').innerHTML = `💡 [AI Daily Insight]<br><br>` + data.ai_insight.replace(/\n/g, '<br>');
+
+                // 3. 날씨 반영
+                document.getElementById('weather-info').innerText = data.weather;
+
+                // 4. 뉴스 리스트 반영
+                const newsList = document.getElementById('news-list');
+                newsList.innerHTML = '';
+                data.news.forEach(title => {
+                    const li = document.createElement('li');
+                    li.innerText = title;
+                    newsList.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error("데이터를 불러오는데 실패했습니다.", error);
+                document.getElementById('ai-insight').innerHTML = "⚠️ 데이터를 불러오지 못했습니다. 동일한 폴더에 JSON 파일이 있는지, 또는 웹 서버 환경에서 실행 중인지 확인해주세요.";
+            }
+        }
+
+        // 페이지가 열리면 즉시 데이터 로드 실행
+        window.onload = () => {
+            loadDashboardData();
+            
+            // 기존 1단계에서 만들었던 샘플 차트 렌더링
+            new Chart(document.getElementById('widget1'), {
+                type: 'doughnut',
+                data: { labels: ['달성', '미달성'], datasets: [{ data: [85, 15], backgroundColor: ['#007bff', '#e9ecef'] }] },
+                options: { rotation: -90, circumference: 180, maintainAspectRatio: false }
+            });
+        };
+    </script>
+</body>
+</html>
