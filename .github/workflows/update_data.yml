@@ -1,0 +1,35 @@
+name: Daily Marketing Report Auto-Update
+
+on:
+  schedule:
+    # 한국 시간(KST) 아침 7시 30분은 세계 표준시(UTC)로 전날 밤 10시 30분입니다.
+    - cron: '30 22 * * *'
+  workflow_dispatch: # 이 버튼을 넣으면 수동으로도 로봇을 작동시킬 수 있습니다!
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 저장소 파일 가져오기
+        uses: actions/checkout@v3
+
+      - name: 파이썬 환경 세팅하기
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: 필요한 도구 설치하기
+        run: pip install requests beautifulsoup4 google-genai
+
+      - name: 파이썬 코드 실행하여 데이터 갱신하기 (수 Su 분석 시작)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python data_pipeline.py
+
+      - name: 변경된 데이터(JSON)를 웹사이트에 반영하기
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add dashboard_data.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "데이터 자동 업데이트 완료"
+          git push
