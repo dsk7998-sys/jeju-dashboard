@@ -8,21 +8,21 @@ on:
 jobs:
   update-dashboard:
     runs-on: ubuntu-latest
-    # 💡 핵심 해결책: 로봇에게 파일을 덮어쓸 수 있는 '쓰기 권한'을 명시적으로 부여합니다!
     permissions:
-      contents: write 
+      contents: write
       
     steps:
       - name: 저장소 파일 가져오기
-        uses: actions/checkout@v4  # 노란색 경고 해결: 최신 버전으로 업데이트
+        uses: actions/checkout@v4
 
       - name: 파이썬 환경 세팅하기
-        uses: actions/setup-python@v5 # 노란색 경고 해결: 최신 버전으로 업데이트
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
       - name: 필요한 도구 설치하기
-        run: pip install requests beautifulsoup4 google-genai
+        # 💡 핵심 해결책: 로봇의 준비물 목록에 'lxml'을 추가했습니다!
+        run: pip install requests beautifulsoup4 lxml google-genai
 
       - name: 파이썬 코드 실행하여 데이터 갱신하기 (수 Su 분석 시작)
         env:
