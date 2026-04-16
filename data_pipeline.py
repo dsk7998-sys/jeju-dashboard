@@ -1,4 +1,3 @@
-# data_pipeline.py (깃허브 로봇용 최종 버전)
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -6,7 +5,6 @@ import datetime
 import os
 from google import genai 
 
-# 💡 깃허브 비밀 금고에서 API 키를 안전하게 꺼내옵니다.
 MY_API_KEY = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=MY_API_KEY) 
 
@@ -15,7 +13,9 @@ print("데이터 수집 및 수(Su)의 분석을 시작합니다...")
 # 1. 뉴스 데이터 수집
 news_keyword = "제주 신라호텔"
 news_url = f"https://news.google.com/rss/search?q={news_keyword}&hl=ko&gl=KR&ceid=KR:ko"
-news_soup = BeautifulSoup(requests.get(news_url).text, 'xml')
+
+# 💡 핵심 해결책: 말썽을 피우던 'xml' 대신, 기본 내장된 'html.parser'를 사용합니다!
+news_soup = BeautifulSoup(requests.get(news_url).text, 'html.parser')
 news_titles = [item.title.text for item in news_soup.find_all('item')[:3]]
 
 # 2. 날씨 데이터 수집
